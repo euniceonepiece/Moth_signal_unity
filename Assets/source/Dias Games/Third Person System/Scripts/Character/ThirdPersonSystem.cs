@@ -252,21 +252,23 @@ namespace DiasGames.ThirdPersonSystem
             if (m_ActiveAbility != null)
                 m_ActiveAbility.UpdateAbility();
             // ----------------------------------------------------------------- //
-            if ((Input.GetKeyDown(KeyCode.F)) && (IsReadyThrow == false))
+            if ((Input.GetKeyDown(KeyCode.F))&&(Chokehold == false))
             {
-                GuardTarget.GetComponent<Guard>().TryChokehold = true;
-                LeftHand = GuardTarget.GetComponent<Guard>().PlayerLeftHand;
-                RightHand = GuardTarget.GetComponent<Guard>().PlayerRightHand;
-            }
-
-            if ((Input.GetKeyDown(KeyCode.G))&&(IsReadyThrow == false))
-            {
-                GetObjectThrow();
-            }
-            else if ((Input.GetKeyDown(KeyCode.G)) && (IsReadyThrow == true))
-            {
-                Player_animator.SetLayerWeight(Player_animator.GetLayerIndex("ThrowObject"), 1);
-                Player_animator.SetTrigger("Throw");
+                if (IsReadyThrow == false)
+                {
+                    GetObjectThrow();
+                }
+                else if (IsReadyThrow == true)
+                {
+                    Player_animator.SetLayerWeight(Player_animator.GetLayerIndex("ThrowObject"), 1);
+                    Player_animator.SetTrigger("Throw");
+                }
+                if (IsReadyThrow == false)
+                {
+                    GuardTarget.GetComponent<Guard>().TryChokehold = true;
+                    LeftHand = GuardTarget.GetComponent<Guard>().PlayerLeftHand;
+                    RightHand = GuardTarget.GetComponent<Guard>().PlayerRightHand;
+                }
             }
         }
         void isChokehold()

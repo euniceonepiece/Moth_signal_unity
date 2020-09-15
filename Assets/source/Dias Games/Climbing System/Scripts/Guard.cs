@@ -11,7 +11,7 @@ namespace DiasGames.ThirdPersonSystem
     public class Guard : MonoBehaviour
     {
         private NavMeshAgent Navi;
-        public GameObject Target, PatrolTarget, Player1, Player2, LeftHand, RightHand, BodyIK, UI1, PlayerLeftHand, PlayerRightHand;
+        public GameObject Target, PatrolTarget, Player1, Player2, LeftHand, RightHand, BodyIK, UI1, PlayerLeftHand, PlayerRightHand, AttractTarget;
 
         public Animator anim;
         public float lookRadio = 30;
@@ -21,6 +21,7 @@ namespace DiasGames.ThirdPersonSystem
         public bool Dead;
         public bool TryChokehold;
         public bool isChokehold;
+        public bool isAttract;
         public float distance;
         public GameObject[] PatrolPosition = new GameObject[3];
         public float[] CDs = new float[3];
@@ -72,6 +73,7 @@ namespace DiasGames.ThirdPersonSystem
             Dead = false;
             isChokehold = false;
             TryChokehold = false;
+            isAttract = false;
             Target = Player1;
             anim.SetLayerWeight(anim.GetLayerIndex("Chokehold Layer"), 0f);
             HP = MaxHP;
@@ -86,14 +88,20 @@ namespace DiasGames.ThirdPersonSystem
             }
             if ((Find == false) && (Dead == false))
             {
-                anim.SetBool("Walk", true);
-                patrol();
-            }
-            if ((Find == false) && (Dead == false))
-            {
+                if (isAttract == false) {
+                    patrol();
+                }
                 Chokehold();
             }
-            if ((HP < 0)&&(Dead == false))
+            if ((Find == false) && (Dead == false) && (isAttract == true))
+            {
+                anim.SetBool("Walk", false);
+                Attract();
+            }
+            else {
+                anim.SetBool("Attract", false);
+            }
+                if ((HP < 0)&&(Dead == false))
             {
                 Navi.ResetPath();
                 Dead = true;
@@ -113,17 +121,29 @@ namespace DiasGames.ThirdPersonSystem
 
         void patrol()
         {
+            anim.SetBool("Walk", true);
             PatrolTarget = PatrolPosition[PatrolPosition1];
             float distance = Vector3.Distance(PatrolTarget.transform.position, transform.position);
             Navi.SetDestination(PatrolTarget.transform.position);
             Navi.stoppingDistance = 1;
-            if (distance < 2)
+            if (distance < 1.5f)
             {
                 PatrolPosition1 = PatrolPosition1 + 1;
                 if (PatrolPosition1 == PatrolPosition.Length)
                 {
                     PatrolPosition1 = 0;
                 }
+            }
+        }
+        void Attract()
+        {
+            float distance = Vector3.Distance(AttractTarget.transform.position, transform.position);
+            Navi.SetDestination(AttractTarget.transform.position);
+            Navi.stoppingDistance = 1;
+            anim.SetBool("Attract", true);
+            if (distance <= 2) {
+                anim.SetTrigger("Arrival");
+                Invoke("isAttractfalse", 3);
             }
         }
 
@@ -212,19 +232,14 @@ namespace DiasGames.ThirdPersonSystem
         }
 
 
-        private void OnTriggerEnter(Collider c)
+        public void OnTriggerEnter(Collider c)
         {
-            /*if (c.tag == "floor")
+            if (c.tag == "Attract")
             {
-                if (timer_land <= 0)
-                {
-                    is_jumping = false;
-                    timer_land = 0;
-                    Navi.enabled = true;
-                }
-            }*/
-
-
+                AttractTarget = c.gameObject;
+                isAttract = true;
+                Debug.Log("4353");
+            }
         }
 
         void ChTarget()
@@ -266,7 +281,11 @@ namespace DiasGames.ThirdPersonSystem
         {
             isAttack = false;
         }
-
+        void isAttractfalse()
+        {
+            anim.SetBool("Attract", false);
+            isAttract = false;
+        }
 
         #endregion
 
